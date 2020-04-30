@@ -3,6 +3,7 @@ package com.viewer.index.download;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.viewer.index.entity.TsEntity;
+import com.viewer.index.utils.FileSortUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -55,26 +56,26 @@ public class BlobDown {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "ERROR");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "stdout");
         long l = System.currentTimeMillis();
-        beginParse();
-//        downLoadItemTs(System.getProperty("user.dir") + "/src/test/java/resource",
-//                "https://ltsbsy.qq.com/uwMROfz2r5zAoaQXGdGnCmdf646YsKpvYbT1SnTPDDjQJcI2/holMnFsnG4rxp01qem9zOQBDqCgL4hEKReeOUOoMBC3meVCQGdpY8g4ysAxypu5k3_Hv_NcNwwRg62Go1anCntXcyQZeln35ajJ0tms9Wem2dLl2ZC0B1uUD0UJ7JKo-GUeJNVc21INulqao9f_SfiiwUW4Kle51XR9MsNx1iYQ/0195_b0033tddyn9.321002.7.ts?index=195&start=1968840&end=1979760&brs=6150420&bre=7872687&ver=4", 2000);
+//        beginParse();
+        downLoadItemTs(System.getProperty("user.dir") + "/src/test/java/resource",
+                "https://valipl.cp31.ott.cibntv.net/67756D6080932713CFC02204E/03000500005E86F5BA4016305017053B6BBF9C-C3E2-4759-99C6-6FB615BCCA2F-00668.ts?ccode=0502&duration=6677&expire=18000&psid=69c623e9854b891a392db20ae4030e46&ups_client_netip=db85aaae&ups_ts=1588226286&ups_userid=&utid=r5%2F8FZ0M3lACAduFqkxnP2Du&vid=XNDYxNzc3Njg2MA%3D%3D&sm=1&operate_type=1&dre=u37&si=73&eo=0&dst=1&iv=0&s=f1c87a52dcf011e5b522&type=flvhdv3&bc=2&vkey=B4630292655706dcf8998e22bc8655867", 2000);
         System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
     }
 
     private static void beginParse() throws IOException, InterruptedException {
 
-        String name = "龙岭";
+        String name = "名侦探柯南：纯黑的恶梦";
         String source = "E:\\test\\";
-//        URL url = new URL("https://ltsbsy.qq.com/uwMROfz2r5zAoaQXGdGnCmdf646YsKpvYbT1SnTPDDjQJcI2/holMnFsnG4rxp01qem9zOQBDqCgL4hEKReeOUOoMBC3meVCQGdpY8g4ysAxypu5k3_Hv_NcNwwRg62Go1anCntXcyQZeln35ajJ0tms9Wem2dLl2ZC0B1uUD0UJ7JKo-GUeJNVc21INulqao9f_SfiiwUW4Kle51XR9MsNx1iYQ/b0033tddyn9.321002.ts.m3u8?ver=4");
-//        URLConnection urlConnection = url.openConnection();
-//        Object content = urlConnection.getContent();
-//        downM3U8File((InputStream) content, name + ".txt");
+        URL url = new URL("https://valipl.cp31.ott.cibntv.net/67743098ABF3D7193E7C83E7F/03000900005EA76DE0401630501705661E4767-CB47-406D-B290-B60F92D8C015.m3u8?ccode=0502&duration=6677&expire=18000&psid=548c78134c5e7b69afc9dddfb241a915&ups_client_netip=db85aaae&ups_ts=1588220666&ups_userid=&utid=r5%2F8FZ0M3lACAduFqkxnP2Du&vid=XNDYxNzc3Njg2MA%3D%3D&vkey=B055bca66c20c9fb71601d2f0bdd6b6a7&sm=1&operate_type=1&dre=u37&si=73&eo=0&dst=1&iv=0&s=f1c87a52dcf011e5b522&type=mp4hd3v3&bc=2");
+        URLConnection urlConnection = url.openConnection();
+        Object content = urlConnection.getContent();
+        downM3U8File((InputStream) content, name + ".m3u8");
         System.out.println("开始从文件中读取....");
-        readM3U8ToList(name + ".txt");
+        readM3U8ToList(name + ".m3u8", 1000);
         //读取下载记录
         readDownloadLog(source, name);
         System.out.println("注册重试");
-//        executorService.execute(new RetryThread());
+        executorService.execute(new RetryThread());
         System.out.println("开始下载....");
         downloadTsFile(source, name);
         countDownLatch.await();
@@ -102,14 +103,15 @@ public class BlobDown {
         String source = "E:\\test\\" + name;
         File file = new File(source);
         if(file.exists()){
-            int length = file.list().length;
+            File[] files = file.listFiles();
+            FileSortUtils.sort(files);
             File merge = new File(source + "/" + name + ".mp4");
             if(!merge.exists())
                 merge.createNewFile();
             FileOutputStream fos = new FileOutputStream(merge, true);
-            for(int i=0;i<length;i++){
-                System.out.println("开始merge：" + source + "/" + i + ".ts");
-                File sou = new File(source + "/" + i + ".ts");
+            for(int i=0;i<files.length;i++){
+                System.out.println("开始merge：" + files[i].getName());
+                File sou = files[i];
                 if(sou.exists()){
                     //merge
                     FileInputStream fis = new FileInputStream(sou);
@@ -161,7 +163,7 @@ public class BlobDown {
         try(FileOutputStream fos = new FileOutputStream(file)) {
             Thread.sleep(2000);
             CloseableHttpClient conn = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet(prefix + ts);
+            HttpGet httpGet = new HttpGet(ts);
             RequestConfig requestConfig = RequestConfig.custom()
                     .setSocketTimeout(2000).setConnectTimeout(2000).build();//设置请求和传输超时时间
             httpGet.setConfig(requestConfig);
@@ -207,15 +209,22 @@ public class BlobDown {
     }
 
 
-    public static void readM3U8ToList(String fileName) throws IOException {
+    public static void readM3U8ToList(String fileName, double sec) throws IOException {
         String source = System.getProperty("user.dir") + "/src/test/java/resource/";
         fileName = source + fileName;
         File file = new File(fileName);
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         ArrayList<String> lists = Lists.newArrayList();
         String ts = null;
+        double length = 0;
         while((ts=reader.readLine())!=null){
-            lists.add(ts);
+            if(ts.contains("EXTINF")){
+                length += Double.parseDouble(ts.replace("#EXTINF:", "").replace(",", ""));
+            }
+            if(length<sec)
+                continue;
+            if(ts.contains("ts"))
+                lists.add(ts);
         }
         //获取到所有的url后将其分配到不同的list中
         int mod = 0;
@@ -243,10 +252,10 @@ public class BlobDown {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String res = null;
         while((res = reader.readLine()) != null){
-            if(res.contains("ts")){
-                res = res + "\r\n";
-                fos.write(res.getBytes());
-            }
+            res = res + "\r\n";
+            fos.write(res.getBytes());
+//            if(res.contains("ts") || res.contains("EXTINF")){
+//            }
         }
         fos.close();
 

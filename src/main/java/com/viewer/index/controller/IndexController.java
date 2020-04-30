@@ -13,4 +13,6 @@ public class IndexController {
     public String test(){
         return "success";
     }
+
+
 }
