@@ -24,7 +24,7 @@ class FileCompare implements Comparator<File> {
             int f2 = Integer.parseInt(split2[0]);
             return f1-f2;
         }catch (Exception e){
-            System.out.println(split1[0] + "," + split2[0]);
+            System.out.println(names1.toString() + "," + names2.toString());
         }
         return 0;
     }

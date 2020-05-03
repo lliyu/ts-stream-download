@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.viewer.index.entity.TsEntity;
 import com.viewer.index.utils.FileSortUtils;
+import javafx.application.Platform;
+import javafx.scene.control.Label;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -18,13 +20,23 @@ import java.util.concurrent.*;
 
 public class BlobDown {
 
-    private static ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private Label log;
+
+    public BlobDown(Label log) {
+        this.log = log;
+    }
+
+    private static ExecutorService executorService = Executors.newFixedThreadPool(5);
     private static ArrayList<Map<Integer, String>> objects = Lists.newArrayList();
-    private static CountDownLatch countDownLatch = new CountDownLatch(5);
-    private static ArrayBlockingQueue<TsEntity> blockingQueue = new ArrayBlockingQueue<>(16);
+//    private static CountDownLatch countDownLatch = new CountDownLatch(5);
+    private static LinkedBlockingQueue<TsEntity> blockingQueue = new LinkedBlockingQueue<TsEntity>(16);
     private static CopyOnWriteArrayList<String> lists = new CopyOnWriteArrayList<>();
 
-    private static String  prefix = "https://ltsbsy.qq.com/uwMROfz2r5zAoaQXGdGnCmdf646YsKpvYbT1SnTPDDjQJcI2/holMnFsnG4rxp01qem9zOQBDqCgL4hEKReeOUOoMBC3meVCQGdpY8g4ysAxypu5k3_Hv_NcNwwRg62Go1anCntXcyQZeln35ajJ0tms9Wem2dLl2ZC0B1uUD0UJ7JKo-GUeJNVc21INulqao9f_SfiiwUW4Kle51XR9MsNx1iYQ/";
+    public int total = 0;
+
+    public int currentIndex = 0;
+
+    private static String  prefix = "https://tni8rv.cdnlab.live/hls/--M9TVtDAZGN7P81gDhfBQ/1588328968/2000/2464/";
 
     static {
         ConcurrentMap<Integer, String> map1 = Maps.newConcurrentMap();
@@ -57,33 +69,45 @@ public class BlobDown {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "stdout");
         long l = System.currentTimeMillis();
 //        beginParse();
-        downLoadItemTs(System.getProperty("user.dir") + "/src/test/java/resource",
-                "https://valipl.cp31.ott.cibntv.net/67756D6080932713CFC02204E/03000500005E86F5BA4016305017053B6BBF9C-C3E2-4759-99C6-6FB615BCCA2F-00668.ts?ccode=0502&duration=6677&expire=18000&psid=69c623e9854b891a392db20ae4030e46&ups_client_netip=db85aaae&ups_ts=1588226286&ups_userid=&utid=r5%2F8FZ0M3lACAduFqkxnP2Du&vid=XNDYxNzc3Njg2MA%3D%3D&sm=1&operate_type=1&dre=u37&si=73&eo=0&dst=1&iv=0&s=f1c87a52dcf011e5b522&type=flvhdv3&bc=2&vkey=B4630292655706dcf8998e22bc8655867", 2000);
+//        downLoadItemTs(System.getProperty("user.dir") + "/src/test/java/resource",
+//                "https://videony.rhsj520.com:8091/20191017/ooe7se8h/1500kb/hls/DmksUpK7.ts", 2000);
+        BlobDown blobDown = new BlobDown(null);
+        blobDown.beginParse();
         System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
     }
 
-    private static void beginParse() throws IOException, InterruptedException {
+    public void beginParse() throws IOException, InterruptedException {
 
-        String name = "名侦探柯南：纯黑的恶梦";
-        String source = "E:\\test\\";
-        URL url = new URL("https://valipl.cp31.ott.cibntv.net/67743098ABF3D7193E7C83E7F/03000900005EA76DE0401630501705661E4767-CB47-406D-B290-B60F92D8C015.m3u8?ccode=0502&duration=6677&expire=18000&psid=548c78134c5e7b69afc9dddfb241a915&ups_client_netip=db85aaae&ups_ts=1588220666&ups_userid=&utid=r5%2F8FZ0M3lACAduFqkxnP2Du&vid=XNDYxNzc3Njg2MA%3D%3D&vkey=B055bca66c20c9fb71601d2f0bdd6b6a7&sm=1&operate_type=1&dre=u37&si=73&eo=0&dst=1&iv=0&s=f1c87a52dcf011e5b522&type=mp4hd3v3&bc=2");
-        URLConnection urlConnection = url.openConnection();
-        Object content = urlConnection.getContent();
-        downM3U8File((InputStream) content, name + ".m3u8");
+        String name = "ssni-229";
+//        String source = "E:\\test\\";
+        String source = "/Users/liyu/Downloads/";
+//        URL url = new URL("https://m3u8.cdnpan.com/PqskLNRv.m3u8");
+//        URLConnection urlConnection = url.openConnection();
+//        Object content = urlConnection.getContent();
+//        downM3U8File((InputStream) content, name + ".m3u8");
         System.out.println("开始从文件中读取....");
         readM3U8ToList(name + ".m3u8", 1000);
+
+        totalFinishedCount();
         //读取下载记录
         readDownloadLog(source, name);
         System.out.println("注册重试");
         executorService.execute(new RetryThread());
         System.out.println("开始下载....");
         downloadTsFile(source, name);
-        countDownLatch.await();
-        System.out.println("开始合并文件....");
-        mergeFile(name);
+//        countDownLatch.await();
+//        System.out.println("开始合并文件....");
+//        mergeFile(name);
     }
 
-    private static void readDownloadLog(String source, String name) {
+    private void totalFinishedCount() {
+        objects.stream().forEach(map -> {
+            total += map.size();
+        });
+    }
+
+    private void readDownloadLog(String source, String name) {
+        Set<String> finishedBlock = new HashSet<>();
         File file = new File(source + name + "\\finishedLog.log");
         if(file.exists()){
             try {
@@ -91,16 +115,39 @@ public class BlobDown {
                 BufferedReader br = new BufferedReader(new InputStreamReader(fis));
                 String res = null;
                 while ((res = br.readLine())!=null){
-                    lists.add(res);
+                    String[] split = res.split("=");
+                    lists.add(split[1]);
+                    finishedBlock.add(split[0]);
+                    currentIndex++;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        File dir = new File(source + name);
+        if(dir.exists() && dir.isDirectory()){
+            Set<String> existBlock = new HashSet<>();
+            String[] list = dir.list();
+            for(String str : list){
+                String[] names1 = str.split("\\\\");
+                String[] split1 = names1[names1.length-1].split("\\.");
+                existBlock.add(split1[0]);
+            }
+
+            existBlock.removeAll(finishedBlock);
+            existBlock.stream().forEach(path -> {
+                File res = new File(source + name + "/" + path + ".ts");
+                res.deleteOnExit();
+            });
+        }
     }
 
-    public static void mergeFile(String name) throws IOException {
-        String source = "E:\\test\\" + name;
+    public void mergeFile(String name) throws IOException {
+        //删除日志
+        String source = "/Users/liyu/Downloads/" + name;
+        File log = new File(source + "\\finishedLog.log");
+        if(log.exists())
+            log.deleteOnExit();
         File file = new File(source);
         if(file.exists()){
             File[] files = file.listFiles();
@@ -127,26 +174,26 @@ public class BlobDown {
     }
 
 
-    private static void downloadTsFile(String source, String name) {
+    private void downloadTsFile(String source, String name) {
         File dir = new File(source + name);
         if(!dir.exists())
             dir.mkdirs();
 
         for(int i=0;i<objects.size();i++){
-            DownLoadTsThread downLoadTsThread = new DownLoadTsThread(i, source+name, countDownLatch);
+            DownLoadTsThread downLoadTsThread = new DownLoadTsThread(i, source+name);
             executorService.execute(downLoadTsThread);
         }
         executorService.shutdown();
     }
 
-    public static void clear(){
+    public void clear(){
         Iterator<Map<Integer, String>> iterator = objects.iterator();
         while (iterator.hasNext()){
             iterator.next().clear();
         }
     }
 
-    private static void downLoadItemTs(String path, String ts, int i) {
+    private void downLoadItemTs(String path, String ts, int i) {
         if(lists.contains(ts)){
             System.out.println("该ts文件已经下载完成");
             return;
@@ -199,17 +246,24 @@ public class BlobDown {
         }
     }
 
-    private static void wirteDownloadLogToFile(String path, String ts, int count) throws IOException {
+    private void wirteDownloadLogToFile(String path, String ts, int count) throws IOException {
         File file = new File(path + "\\finishedLog.log");
         if(!file.exists())
             file.createNewFile();
         FileOutputStream fos = new FileOutputStream(file, true);
         fos.write((count + "=" +ts + "\r\n").getBytes());
+        currentIndex++;
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                //更新JavaFX的主线程的代码放在此处
+                log.setText(currentIndex + "/" + total);
+            }
+        });
         fos.close();
     }
 
-
-    public static void readM3U8ToList(String fileName, double sec) throws IOException {
+    public void readM3U8ToList(String fileName, double sec) throws IOException {
         String source = System.getProperty("user.dir") + "/src/test/java/resource/";
         fileName = source + fileName;
         File file = new File(fileName);
@@ -237,7 +291,7 @@ public class BlobDown {
     }
 
 
-    private static void downM3U8File(InputStream content, String fileName) throws IOException {
+    private void downM3U8File(InputStream content, String fileName) throws IOException {
         String source = System.getProperty("user.dir") + "/src/test/java/resource/";
         File dir = new File(source);
         if(!dir.exists())
@@ -262,15 +316,15 @@ public class BlobDown {
         System.out.println("结束m3u8文件解析");
     }
 
-static class DownLoadTsThread implements Runnable{
+class DownLoadTsThread implements Runnable{
     private int index;
     private String path;
     private CountDownLatch countDownLatch;
 
-    public DownLoadTsThread(int index, String path, CountDownLatch countDownLatch) {
+    public DownLoadTsThread(int index, String path ) {
         this.index = index;
         this.path = path;
-        this.countDownLatch = countDownLatch;
+//        this.countDownLatch = countDownLatch;
     }
 
     @Override
@@ -279,12 +333,12 @@ static class DownLoadTsThread implements Runnable{
         stringMap.forEach((key, value) -> {
             downLoadItemTs(path, value, key);
         });
-        countDownLatch.countDown();
+//        countDownLatch.countDown();
         clear();
     }
 }
 
-static class RetryThread extends Thread {
+class RetryThread extends Thread {
 
     @Override
     public void run() {
@@ -292,7 +346,7 @@ static class RetryThread extends Thread {
         while (true){
             if(blockingQueue.isEmpty()){
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(5000);
                     continue;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
