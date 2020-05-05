@@ -29,14 +29,14 @@ public class BlobDown {
     private static ExecutorService executorService = Executors.newFixedThreadPool(5);
     private static ArrayList<Map<Integer, String>> objects = Lists.newArrayList();
 //    private static CountDownLatch countDownLatch = new CountDownLatch(5);
-    private static LinkedBlockingQueue<TsEntity> blockingQueue = new LinkedBlockingQueue<TsEntity>(16);
+    private static LinkedBlockingQueue<TsEntity> blockingQueue = new LinkedBlockingQueue<TsEntity>(160);
     private static CopyOnWriteArrayList<String> lists = new CopyOnWriteArrayList<>();
 
     public int total = 0;
 
     public int currentIndex = 0;
 
-    private static String  prefix = "https://tni8rv.cdnlab.live/hls/--M9TVtDAZGN7P81gDhfBQ/1588328968/2000/2464/";
+    private static String  prefix = "https://cdn-hls.hitohi.com/m3u8/0/346/346_123a/";
 
     static {
         ConcurrentMap<Integer, String> map1 = Maps.newConcurrentMap();
@@ -73,20 +73,22 @@ public class BlobDown {
 //                "https://videony.rhsj520.com:8091/20191017/ooe7se8h/1500kb/hls/DmksUpK7.ts", 2000);
         BlobDown blobDown = new BlobDown(null);
         blobDown.beginParse();
+//        blobDown.downLoadItemTs("/Users/liyu/Downloads/", "https://cdn-hls.hitohi.com/m3u8/0/346/346_123a/https://v55.xiaoxiaodl.com/ad/ad-1.ts", 1);
+
         System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
     }
 
     public void beginParse() throws IOException, InterruptedException {
-
-        String name = "ssni-229";
+        long l = System.currentTimeMillis();
+        String name = "国内TS系列";
 //        String source = "E:\\test\\";
         String source = "/Users/liyu/Downloads/";
-//        URL url = new URL("https://m3u8.cdnpan.com/PqskLNRv.m3u8");
-//        URLConnection urlConnection = url.openConnection();
-//        Object content = urlConnection.getContent();
-//        downM3U8File((InputStream) content, name + ".m3u8");
+        URL url = new URL("https://cdn-hls.hitohi.com/m3u8/0/346/346_123a/index.m3u8?t=1588600791875");
+        URLConnection urlConnection = url.openConnection();
+        Object content = urlConnection.getContent();
+        downM3U8File((InputStream) content, name + ".m3u8");
         System.out.println("开始从文件中读取....");
-        readM3U8ToList(name + ".m3u8", 1000);
+        readM3U8ToList(name + ".m3u8", 0);
 
         totalFinishedCount();
         //读取下载记录
@@ -98,6 +100,7 @@ public class BlobDown {
 //        countDownLatch.await();
 //        System.out.println("开始合并文件....");
 //        mergeFile(name);
+        System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
     }
 
     private void totalFinishedCount() {
@@ -108,7 +111,7 @@ public class BlobDown {
 
     private void readDownloadLog(String source, String name) {
         Set<String> finishedBlock = new HashSet<>();
-        File file = new File(source + name + "\\finishedLog.log");
+        File file = new File(source + name + "/finishedLog.log");
         if(file.exists()){
             try {
                 FileInputStream fis = new FileInputStream(file);
@@ -145,14 +148,14 @@ public class BlobDown {
     public void mergeFile(String name) throws IOException {
         //删除日志
         String source = "/Users/liyu/Downloads/" + name;
-        File log = new File(source + "\\finishedLog.log");
+        File log = new File(source + "/finishedLog.log");
         if(log.exists())
             log.deleteOnExit();
         File file = new File(source);
         if(file.exists()){
             File[] files = file.listFiles();
             FileSortUtils.sort(files);
-            File merge = new File(source + "/" + name + ".mp4");
+            File merge = new File(source + "/" + ".mp4");
             if(!merge.exists())
                 merge.createNewFile();
             FileOutputStream fos = new FileOutputStream(merge, true);
@@ -195,10 +198,11 @@ public class BlobDown {
 
     private void downLoadItemTs(String path, String ts, int i) {
         if(lists.contains(ts)){
-            System.out.println("该ts文件已经下载完成");
+//            System.out.println("该ts文件已经下载完成");
             return;
         }
         File file = new File(path + "/" + i + ".ts");
+        System.out.println("开始下载" + i + ".ts文件");
         try {
             if(!file.exists()){
                 file.createNewFile();
@@ -208,9 +212,9 @@ public class BlobDown {
         }
 
         try(FileOutputStream fos = new FileOutputStream(file)) {
-            Thread.sleep(2000);
+            Thread.sleep(100);
             CloseableHttpClient conn = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet(ts);
+            HttpGet httpGet = new HttpGet(prefix + ts);
             RequestConfig requestConfig = RequestConfig.custom()
                     .setSocketTimeout(2000).setConnectTimeout(2000).build();//设置请求和传输超时时间
             httpGet.setConfig(requestConfig);
@@ -222,8 +226,7 @@ public class BlobDown {
             InputStream inputStream = response.getEntity().getContent();
 
             //download
-            byte[] bytes = new byte[1024];
-            System.out.println("开始下载" + i + ".ts文件");
+            byte[] bytes = new byte[1024*1024];
             int index = 0;
             while ((index=inputStream.read(bytes))!=-1){
                 fos.write(bytes, 0, index);
@@ -231,6 +234,8 @@ public class BlobDown {
             //下载完成写入文件中
             wirteDownloadLogToFile(path, ts, i);
 
+        }catch (IllegalStateException e){
+            System.out.println("url不合法");
         } catch (Exception e) {
 //            e.printStackTrace();
             System.out.println("error:" + e.getLocalizedMessage());
@@ -247,7 +252,7 @@ public class BlobDown {
     }
 
     private void wirteDownloadLogToFile(String path, String ts, int count) throws IOException {
-        File file = new File(path + "\\finishedLog.log");
+        File file = new File(path + "/finishedLog.log");
         if(!file.exists())
             file.createNewFile();
         FileOutputStream fos = new FileOutputStream(file, true);
