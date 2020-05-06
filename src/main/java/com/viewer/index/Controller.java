@@ -2,6 +2,7 @@ package com.viewer.index;
 
 import com.alibaba.fastjson.JSON;
 import com.viewer.index.download.BlobDown;
+import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.M3U8InfoDTO;
 import com.viewer.index.parse.TimesCalculate;
 import javafx.scene.control.Label;
@@ -41,8 +42,12 @@ public class Controller {
 
 
     public void download() throws IOException, InterruptedException {
-        System.out.println(path.getText());
-        BlobDown down = new BlobDown(log);
+        IndexPageEntity pageEntity = new IndexPageEntity();
+        pageEntity.setPath(path);
+        pageEntity.setM3u8(m3u8);
+        pageEntity.setLog(log);
+        pageEntity.setName(name);
+        BlobDown down = new BlobDown(pageEntity);
         down.beginParse();
 //        countDownLatch.await();
 //        down.mergeFile("");
@@ -51,7 +56,10 @@ public class Controller {
     public void parse() throws IOException {
         String m3u8Text = m3u8.getText();
         String nameText = name.getText();
-        BlobDown down = new BlobDown(log);
+        IndexPageEntity pageEntity = new IndexPageEntity();
+        pageEntity.setM3u8(m3u8);
+        pageEntity.setName(name);
+        BlobDown down = new BlobDown(pageEntity);
 
 
         if(!StringUtils.isEmpty(m3u8Text)){
