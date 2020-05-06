@@ -8,6 +8,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -34,8 +35,8 @@ public class MainApp extends Application {
         try {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(new URL("file://" + System.getProperty("user.dir")
-                    + "/src/main/java/com/viewer/index/view/RootLayout.fxml"));
+            File file = new File(System.getProperty("user.dir") + "/src/main/java/com/viewer/index/view/RootLayout.fxml");
+            loader.setLocation(file.toURL());
             rootLayout = (BorderPane) loader.load();
 
             // Show the scene containing the root layout.
@@ -54,8 +55,8 @@ public class MainApp extends Application {
         try {
             // Load person overview.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(new URL("file://" + System.getProperty("user.dir")
-                    + "/src/main/java/com/viewer/index/view/PersonOverview.fxml"));
+            File file = new File(System.getProperty("user.dir") + "/src/main/java/com/viewer/index/view/PersonOverview.fxml");
+            loader.setLocation(file.toURL());
             AnchorPane personOverview = (AnchorPane) loader.load();
 
             // Set person overview into the center of root layout.

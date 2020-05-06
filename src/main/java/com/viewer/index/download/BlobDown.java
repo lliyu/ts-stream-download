@@ -81,8 +81,8 @@ public class BlobDown {
     public void beginParse() throws IOException, InterruptedException {
         long l = System.currentTimeMillis();
         String name = "国内TS系列";
-//        String source = "E:\\test\\";
-        String source = "/Users/liyu/Downloads/";
+        String source = "E:\\test\\";
+//        String source = "/Users/liyu/Downloads/";
         URL url = new URL("https://cdn-hls.hitohi.com/m3u8/0/346/346_123a/index.m3u8?t=1588600791875");
         URLConnection urlConnection = url.openConnection();
         Object content = urlConnection.getContent();
@@ -296,7 +296,7 @@ public class BlobDown {
     }
 
 
-    private void downM3U8File(InputStream content, String fileName) throws IOException {
+    public void downM3U8File(InputStream content, String fileName) throws IOException {
         String source = System.getProperty("user.dir") + "/src/test/java/resource/";
         File dir = new File(source);
         if(!dir.exists())
