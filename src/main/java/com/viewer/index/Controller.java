@@ -26,6 +26,7 @@ public class Controller {
     public Label log;
     public TextField m3u8;
     public TextField name;
+    public TextField prefix;
     public TextArea info;
 
     private CountDownLatch countDownLatch = new CountDownLatch(1);

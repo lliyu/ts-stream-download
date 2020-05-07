@@ -12,6 +12,7 @@ public class IndexPageEntity implements Serializable {
     private Label log;
     private TextField m3u8;
     private TextField name;
+    private TextField prefix;
     private TextArea info;
 
     public Label getPath() {
@@ -52,5 +53,13 @@ public class IndexPageEntity implements Serializable {
 
     public void setInfo(TextArea info) {
         this.info = info;
+    }
+
+    public TextField getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(TextField prefix) {
+        this.prefix = prefix;
     }
 }

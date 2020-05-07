@@ -220,7 +220,7 @@ public class BlobDown {
         try(FileOutputStream fos = new FileOutputStream(file)) {
             Thread.sleep(100);
             CloseableHttpClient conn = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet(prefix + ts);
+            HttpGet httpGet = new HttpGet(pageEntity.getPrefix().getText() + ts);
             RequestConfig requestConfig = RequestConfig.custom()
                     .setSocketTimeout(2000).setConnectTimeout(2000).build();//设置请求和传输超时时间
             httpGet.setConfig(requestConfig);
