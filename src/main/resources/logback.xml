@@ -2,6 +2,12 @@
 <configuration scan="true" scanPeriod="10 seconds">
     <include resource="org/springframework/boot/logging/logback/base.xml" />
 
+    <property name="LOG_PATH"  value="logs" />
+
+    <logger name="org.apache" level="DEBUG"/>
+    <logger name="org.apache.http.wire" level="ERROR"/>
+    <logger name="org.apache.http.headers" level="INFO"/>
+
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${LOG_PATH}/info.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -46,7 +52,7 @@
     <logger name="org.hibernate.engine.QueryParameters" level="INFO" />
     <logger name="org.hibernate.engine.query.HQLQueryPlan" level="INFO" /> -->
 
-    <root level="ERROR">
+    <root level="DEBUG">
         <appender-ref ref="INFO_FILE" />
         <appender-ref ref="ERROR_FILE" />
     </root>

@@ -30,4 +30,13 @@ public class TsEntity implements Serializable {
     public void setPath(String path) {
         this.path = path;
     }
+
+    @Override
+    public String toString() {
+        return "TsEntity{" +
+                "count=" + count +
+                ", ts='" + ts + '\'' +
+                ", path='" + path + '\'' +
+                '}';
+    }
 }

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
@@ -8,7 +12,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="374.0" prefWidth="721.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.viewer.index.Controller">
+<AnchorPane prefHeight="374.0" prefWidth="721.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.viewer.index.Controller">
    <children>
       <SplitPane layoutX="153.0" layoutY="70.0" prefHeight="300.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -22,9 +26,9 @@
                   <TextField fx:id="m3u8" layoutX="104.0" layoutY="46.0" />
                   <Button fx:id="parse" layoutX="284.0" layoutY="46.0" mnemonicParsing="false" onAction="#parse" text="parse" />
                   <TextArea fx:id="info" layoutX="67.0" layoutY="179.0" prefHeight="116.0" prefWidth="307.0" />
-                  <Text layoutX="70.0" layoutY="93.0" strokeType="OUTSIDE" strokeWidth="0.0" text="name" />
+                  <Text layoutX="70.0" layoutY="93.0" strokeType="OUTSIDE" strokeWidth="0.0" text="name：" />
                   <TextField fx:id="name" layoutX="104.0" layoutY="77.0" />
-                  <Text layoutX="70.0" layoutY="131.0" strokeType="OUTSIDE" strokeWidth="0.0" text="prefix" />
+                  <Text layoutX="70.0" layoutY="131.0" strokeType="OUTSIDE" strokeWidth="0.0" text="prefix：" />
                   <TextField fx:id="prefix" layoutX="104.0" layoutY="115.0" />
                </children>
             </AnchorPane>

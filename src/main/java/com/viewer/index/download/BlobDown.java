@@ -1,18 +1,18 @@
 package com.viewer.index.download;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.TsEntity;
 import com.viewer.index.utils.FileSortUtils;
 import javafx.application.Platform;
-import javafx.scene.control.Label;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -21,6 +21,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class BlobDown {
+
+    private static Logger logger = LoggerFactory.getLogger(BlobDown.class);
 
     private IndexPageEntity pageEntity;
 
@@ -31,7 +33,7 @@ public class BlobDown {
     private static ExecutorService executorService = Executors.newFixedThreadPool(5);
     private static ArrayList<Map<Integer, String>> objects = Lists.newArrayList();
     private static ArrayList<ConcurrentLinkedQueue<TsEntity>> queues = Lists.newArrayList();
-//    private static CountDownLatch countDownLatch = new CountDownLatch(5);
+    private static CountDownLatch countDownLatch = new CountDownLatch(4);
     private static LinkedBlockingQueue<TsEntity> blockingQueue = new LinkedBlockingQueue<TsEntity>(160);
     private static CopyOnWriteArrayList<String> lists = new CopyOnWriteArrayList<>();
 
@@ -43,26 +45,14 @@ public class BlobDown {
     private static String  prefix = "https://cdn2.shayubf.com/";
 
     static {
-//        ConcurrentMap<Integer, String> map1 = Maps.newConcurrentMap();
-//        ConcurrentMap<Integer, String> map2 = Maps.newConcurrentMap();
-//        ConcurrentMap<Integer, String> map3 = Maps.newConcurrentMap();
-//        ConcurrentMap<Integer, String> map4 = Maps.newConcurrentMap();
-//        ConcurrentMap<Integer, String> map5 = Maps.newConcurrentMap();
-//        objects.add(map1);
-//        objects.add(map2);
-//        objects.add(map3);
-//        objects.add(map4);
-//        objects.add(map5);
         ConcurrentLinkedQueue<TsEntity> queue1 = Queues.newConcurrentLinkedQueue();
         ConcurrentLinkedQueue<TsEntity> queue2 = Queues.newConcurrentLinkedQueue();
         ConcurrentLinkedQueue<TsEntity> queue3 = Queues.newConcurrentLinkedQueue();
         ConcurrentLinkedQueue<TsEntity> queue4 = Queues.newConcurrentLinkedQueue();
-        ConcurrentLinkedQueue<TsEntity> queue5 = Queues.newConcurrentLinkedQueue();
         queues.add(queue1);
         queues.add(queue2);
         queues.add(queue3);
         queues.add(queue4);
-        queues.add(queue5);
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -78,9 +68,9 @@ public class BlobDown {
 //                "https://videony.rhsj520.com:8091/20191017/ooe7se8h/1500kb/hls/DmksUpK7.ts", 2000);
         BlobDown blobDown = new BlobDown(null);
 //        blobDown.beginParse();
-        blobDown.downLoadItemTs("/Users/liyu/Downloads/",
-                "https://cdn.iicgs.org/20200506/5c8624a0cd19f2f2c1234f2239631174.mp4/segment-8-v1-a1.ts", 1);
-
+//        blobDown.downLoadItemTs("/Users/liyu/Downloads/",
+//                "https://cdn.iicgs.org/20200506/5c8624a0cd19f2f2c1234f2239631174.mp4/segment-8-v1-a1.ts", 1);
+        blobDown.mergeFile("[KBI-003]丈夫也没给过的激情中出幹砲 米仓穗香");
         System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
     }
 
@@ -89,24 +79,25 @@ public class BlobDown {
         String name = pageEntity.getName().getText();
         String source = pageEntity.getPath().getText();
         String m3u8 = pageEntity.getM3u8().getText();
+        logger.info("===============开始执行‘" + name + "'的下载流程=======================");
         URL url = new URL(m3u8);
         URLConnection urlConnection = url.openConnection();
         Object content = urlConnection.getContent();
         downM3U8File((InputStream) content, name + ".m3u8");
-        System.out.println("开始从文件中读取....");
+        logger.info("开始从文件中读取:" + name + ".m3u8");
         readM3U8ToList(name + ".m3u8", 0);
 
         totalFinishedCount();
         //读取下载记录
         readDownloadLog(source, name);
-        System.out.println("注册重试");
-        executorService.execute(new RetryThread());
+
         System.out.println("开始下载....");
+        logger.info("开始下载ts文件：" + name);
         downloadTsFile(source, name);
-//        countDownLatch.await();
-//        System.out.println("开始合并文件....");
-//        mergeFile(name);
-        System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
+        countDownLatch.await();
+        logger.info("视频文件分段已经下载完成，现在开始合并");
+        mergeFile(name);
+        logger.info("视频文件已下载完成，本次下载共耗时：" + (System.currentTimeMillis()-l)/1000 + "s");
     }
 
     private void totalFinishedCount() {
@@ -117,7 +108,7 @@ public class BlobDown {
 
     private void readDownloadLog(String source, String name) {
         Set<String> finishedBlock = new HashSet<>();
-        File file = new File(source + "/" + name + "/finishedLog.log");
+        File file = new File(source + "//" + name + "//finishedLog.log");
         if(file.exists()){
             try {
                 FileInputStream fis = new FileInputStream(file);
@@ -153,7 +144,8 @@ public class BlobDown {
 
     public void mergeFile(String name) throws IOException {
         //删除日志
-        String source = pageEntity.getPath().getText() + "/" + name;
+//        String source = pageEntity.getPath().getText() + "/" + name;
+        String source = "G:\\Download\\" + name;
         File log = new File(source + "/finishedLog.log");
         if(log.exists())
             log.deleteOnExit();
@@ -161,7 +153,7 @@ public class BlobDown {
         if(file.exists()){
             File[] files = file.listFiles();
             FileSortUtils.sort(files);
-            File merge = new File(source + "/" + ".mp4");
+            File merge = new File(source + "\\" + name + ".mp4");
             if(!merge.exists())
                 merge.createNewFile();
             FileOutputStream fos = new FileOutputStream(merge, true);
@@ -176,6 +168,13 @@ public class BlobDown {
                     while((index=fis.read(bytes))!=-1){
                         fos.write(bytes, 0, index);
                     }
+                    fis.close();
+                    boolean delete = sou.delete();
+                    if(delete){
+                        System.out.println("删除文件成功");
+                    }else {
+                        System.out.println("删除文件失败");
+                    }
                 }
             }
             fos.close();
@@ -187,9 +186,10 @@ public class BlobDown {
         File dir = new File(source + "/" + name);
         if(!dir.exists())
             dir.mkdirs();
-
+        executorService.execute(new RetryThread());
         for(int i=0;i<queues.size();i++){
-            DownLoadTsThread downLoadTsThread = new DownLoadTsThread(i, source + "/" +name);
+            DownLoadTsThread downLoadTsThread =
+                    new DownLoadTsThread(i, source + "/" +name, countDownLatch);
             executorService.execute(downLoadTsThread);
         }
         executorService.shutdown();
@@ -204,11 +204,9 @@ public class BlobDown {
 
     private void downLoadItemTs(String path, String ts, int i) {
         if(lists.contains(ts)){
-//            System.out.println("该ts文件已经下载完成");
             return;
         }
         File file = new File(path + "/" + i + ".ts");
-//        System.out.println("开始下载" + i + ".ts文件");
         try {
             if(!file.exists()){
                 file.createNewFile();
@@ -226,7 +224,6 @@ public class BlobDown {
             httpGet.setConfig(requestConfig);
             httpGet.addHeader("accept", "*/*");
             httpGet.addHeader("connection", "Keep-Alive");
-//            httpGet.addHeader("Content-Type","application/json");
             httpGet.addHeader("user-agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36");
             CloseableHttpResponse response = conn.execute(httpGet);
             InputStream inputStream = response.getEntity().getContent();
@@ -237,14 +234,12 @@ public class BlobDown {
             while ((index=inputStream.read(bytes))!=-1){
                 fos.write(bytes, 0, index);
             }
-            //下载完成写入文件中
-//            wirteDownloadLogToFile(path, ts, i);
+//            下载完成写入文件中
+            wirteDownloadLogToFile(path, ts, i);
 
         }catch (IllegalStateException e){
-            System.out.println("url不合法");
+            logger.error("url不合法：" + e.getLocalizedMessage() + "---" + ts);
         } catch (Exception e) {
-//            e.printStackTrace();
-            System.out.println("error:" + e.getLocalizedMessage());
             //将错误的文件删除并放到重试队列中
             if (file.delete()) {
                 TsEntity entity = new TsEntity();
@@ -252,13 +247,14 @@ public class BlobDown {
                 entity.setPath(path);
                 entity.setTs(ts);
 //                System.out.println(entity.getCount() + ".ts下载失败，已加入重试队列");
+                logger.error("error:" + e.getLocalizedMessage() + "--" + entity);
                 blockingQueue.add(entity);
             }
         }
     }
 
     private void wirteDownloadLogToFile(String path, String ts, int count) throws IOException {
-        File file = new File(path + "/finishedLog.log");
+        File file = new File(path + "//finishedLog.log");
         if(!file.exists())
             file.createNewFile();
         FileOutputStream fos = new FileOutputStream(file, true);
@@ -311,11 +307,15 @@ public class BlobDown {
         if(!dir.exists())
             dir.mkdirs();
         File sourceF = new File(source + fileName);
-        if(!sourceF.exists())
-            sourceF.createNewFile();
+        if(sourceF.exists()){
+            logger.info(sourceF.getName() + "已经存在，不再重复下载");
+            return;
+        }
+
+        sourceF.createNewFile();
 
         FileOutputStream fos = new FileOutputStream(sourceF);
-        System.out.println("开始m3u8文件解析");
+        logger.info(sourceF.getName() + "文件不存在，从给定的url地址开始下载");
         InputStream inputStream = content;
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String res = null;
@@ -327,7 +327,7 @@ public class BlobDown {
         }
         fos.close();
 
-        System.out.println("结束m3u8文件解析");
+        logger.info("文件解析完成，" + sourceF.getName() + "已经下载");
     }
 
 class DownLoadTsThread implements Runnable{
@@ -335,10 +335,10 @@ class DownLoadTsThread implements Runnable{
     private String path;
     private CountDownLatch countDownLatch;
 
-    public DownLoadTsThread(int index, String path ) {
+    public DownLoadTsThread(int index, String path, CountDownLatch countDownLatch) {
         this.index = index;
         this.path = path;
-//        this.countDownLatch = countDownLatch;
+        this.countDownLatch = countDownLatch;
     }
 
     @Override
@@ -353,7 +353,8 @@ class DownLoadTsThread implements Runnable{
             downLoadItemTs(path, poll.getTs(), poll.getCount());
             System.out.println("queue:" + index + "剩余数量：" + tsEntities.size());
         }
-//        countDownLatch.countDown();
+        logger.info("queue:" + index + "-已经全部下载完毕");
+        countDownLatch.countDown();
 //        clear();
     }
 }

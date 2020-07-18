@@ -48,6 +48,7 @@ public class Controller {
         pageEntity.setM3u8(m3u8);
         pageEntity.setLog(log);
         pageEntity.setName(name);
+        pageEntity.setPrefix(prefix);
         BlobDown down = new BlobDown(pageEntity);
         down.beginParse();
 //        countDownLatch.await();
