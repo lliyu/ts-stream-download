@@ -4,7 +4,7 @@
 
     <property name="LOG_PATH"  value="logs" />
 
-    <logger name="org.apache" level="DEBUG"/>
+    <logger name="org.apache" level="ERROR"/>
     <logger name="org.apache.http.wire" level="ERROR"/>
     <logger name="org.apache.http.headers" level="INFO"/>
 

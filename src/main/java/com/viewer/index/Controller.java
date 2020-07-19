@@ -49,8 +49,18 @@ public class Controller {
         pageEntity.setLog(log);
         pageEntity.setName(name);
         pageEntity.setPrefix(prefix);
-        BlobDown down = new BlobDown(pageEntity);
-        down.beginParse();
+        Runnable runnable = () -> {
+            try {
+                BlobDown down = new BlobDown(pageEntity);
+                down.beginParse();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
 //        countDownLatch.await();
 //        down.mergeFile("");
     }

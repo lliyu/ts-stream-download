@@ -186,7 +186,7 @@ public class BlobDown {
         File dir = new File(source + "/" + name);
         if(!dir.exists())
             dir.mkdirs();
-        executorService.execute(new RetryThread());
+//        executorService.execute(new RetryThread());
         for(int i=0;i<queues.size();i++){
             DownLoadTsThread downLoadTsThread =
                     new DownLoadTsThread(i, source + "/" +name, countDownLatch);
@@ -202,11 +202,11 @@ public class BlobDown {
 //        }
 //    }
 
-    private void downLoadItemTs(String path, String ts, int i) {
-        if(lists.contains(ts)){
+    private void downLoadItemTs(TsEntity entity) {
+        if(lists.contains(entity.getTs())){
             return;
         }
-        File file = new File(path + "/" + i + ".ts");
+        File file = new File(entity.getPath() + "/" + entity.getCount() + ".ts");
         try {
             if(!file.exists()){
                 file.createNewFile();
@@ -218,7 +218,7 @@ public class BlobDown {
         try(FileOutputStream fos = new FileOutputStream(file)) {
             Thread.sleep(100);
             CloseableHttpClient conn = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet(pageEntity.getPrefix().getText() + ts);
+            HttpGet httpGet = new HttpGet(pageEntity.getPrefix().getText() + entity.getTs());
             RequestConfig requestConfig = RequestConfig.custom()
                     .setSocketTimeout(2000).setConnectTimeout(2000).build();//设置请求和传输超时时间
             httpGet.setConfig(requestConfig);
@@ -235,30 +235,31 @@ public class BlobDown {
                 fos.write(bytes, 0, index);
             }
 //            下载完成写入文件中
-            wirteDownloadLogToFile(path, ts, i);
+            wirteDownloadLogToFile(entity);
 
         }catch (IllegalStateException e){
-            logger.error("url不合法：" + e.getLocalizedMessage() + "---" + ts);
+            logger.error("url不合法：" + e.getLocalizedMessage() + "---" + entity.getTs());
         } catch (Exception e) {
             //将错误的文件删除并放到重试队列中
             if (file.delete()) {
-                TsEntity entity = new TsEntity();
-                entity.setCount(i);
-                entity.setPath(path);
-                entity.setTs(ts);
-//                System.out.println(entity.getCount() + ".ts下载失败，已加入重试队列");
-                logger.error("error:" + e.getLocalizedMessage() + "--" + entity);
-                blockingQueue.add(entity);
+                if (entity.getRetry()<=3) {
+                    logger.error("error:" + e.getLocalizedMessage() + "--" + entity);
+                    blockingQueue.add(entity);
+                    logger.info(pageEntity.getPrefix() + entity.getTs() + "第" + (entity.getRetry()+1)
+                            +"次下载失败，已加入重试队列");
+                }else {
+                    logger.info(pageEntity.getPrefix() + entity.getTs() + "已经多次下载失败，已丢弃");
+                }
             }
         }
     }
 
-    private void wirteDownloadLogToFile(String path, String ts, int count) throws IOException {
-        File file = new File(path + "//finishedLog.log");
+    private void wirteDownloadLogToFile(TsEntity entity) throws IOException {
+        File file = new File(entity.getPath() + "//finishedLog.log");
         if(!file.exists())
             file.createNewFile();
         FileOutputStream fos = new FileOutputStream(file, true);
-        fos.write((count + "=" +ts + "\r\n").getBytes());
+        fos.write((entity.getCount() + "=" + entity.getTs() + "\r\n").getBytes());
         currentIndex++;
         Platform.runLater(new Runnable() {
             @Override
@@ -350,12 +351,12 @@ class DownLoadTsThread implements Runnable{
         ConcurrentLinkedQueue<TsEntity> tsEntities = queues.get(index);
         while (tsEntities.size() > 0) {
             TsEntity poll = tsEntities.poll();
-            downLoadItemTs(path, poll.getTs(), poll.getCount());
+            poll.setPath(path);
+            downLoadItemTs(poll);
             System.out.println("queue:" + index + "剩余数量：" + tsEntities.size());
         }
         logger.info("queue:" + index + "-已经全部下载完毕");
         countDownLatch.countDown();
-//        clear();
     }
 }
 
@@ -376,7 +377,7 @@ class RetryThread extends Thread {
             TsEntity entity = blockingQueue.poll();
             System.out.println("开始重试" + entity.getCount() + ".ts");
             System.out.println("当前重试队列中剩余：" + blockingQueue.size());
-            downLoadItemTs(entity.getPath(), entity.getTs(), entity.getCount());
+            downLoadItemTs(entity);
         }
     }
 }

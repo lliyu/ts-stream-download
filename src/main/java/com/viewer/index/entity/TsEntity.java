@@ -6,6 +6,7 @@ public class TsEntity implements Serializable {
     private int count;
     private String ts;
     private String path;
+    private int retry;//当前重试次数
 
     public int getCount() {
         return count;
@@ -29,6 +30,14 @@ public class TsEntity implements Serializable {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public int getRetry() {
+        return retry;
+    }
+
+    public void setRetry(int retry) {
+        this.retry = retry;
     }
 
     @Override
