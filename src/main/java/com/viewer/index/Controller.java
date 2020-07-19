@@ -42,7 +42,7 @@ public class Controller {
     }
 
 
-    public void download() throws IOException, InterruptedException {
+    public void download() {
         IndexPageEntity pageEntity = new IndexPageEntity();
         pageEntity.setPath(path);
         pageEntity.setM3u8(m3u8);
@@ -61,8 +61,6 @@ public class Controller {
         };
         Thread thread = new Thread(runnable);
         thread.start();
-//        countDownLatch.await();
-//        down.mergeFile("");
     }
 
     public void parse() throws IOException {

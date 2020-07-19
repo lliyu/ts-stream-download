@@ -30,13 +30,12 @@ public class BlobDown {
         this.pageEntity = pageEntity;
     }
 
-    private static ExecutorService executorService = Executors.newFixedThreadPool(5);
-    private static ArrayList<Map<Integer, String>> objects = Lists.newArrayList();
-    private static ArrayList<ConcurrentLinkedQueue<TsEntity>> queues = Lists.newArrayList();
-    private static CountDownLatch countDownLatch = new CountDownLatch(4);
-    private static LinkedBlockingQueue<TsEntity> blockingQueue = new LinkedBlockingQueue<TsEntity>(160);
-    private static CopyOnWriteArrayList<String> lists = new CopyOnWriteArrayList<>();
+    private ExecutorService executorService = Executors.newFixedThreadPool(5);
+    private ArrayList<ConcurrentLinkedQueue<TsEntity>> queues = Lists.newArrayList();
+    private CountDownLatch countDownLatch = new CountDownLatch(4);
+    private CopyOnWriteArrayList<String> lists = new CopyOnWriteArrayList<>();
 
+    private volatile int circleCount;
 
     public int total = 0;
 
@@ -44,7 +43,7 @@ public class BlobDown {
 
     private static String  prefix = "https://cdn2.shayubf.com/";
 
-    static {
+    {
         ConcurrentLinkedQueue<TsEntity> queue1 = Queues.newConcurrentLinkedQueue();
         ConcurrentLinkedQueue<TsEntity> queue2 = Queues.newConcurrentLinkedQueue();
         ConcurrentLinkedQueue<TsEntity> queue3 = Queues.newConcurrentLinkedQueue();
@@ -55,22 +54,14 @@ public class BlobDown {
         queues.add(queue4);
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-        System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "false");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "ERROR");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "ERROR");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "stdout");
+    public static void main(String[] args) throws IOException {
         long l = System.currentTimeMillis();
 
-//        beginParse();
-//        downLoadItemTs(System.getProperty("user.dir") + "/src/test/java/resource",
-//                "https://videony.rhsj520.com:8091/20191017/ooe7se8h/1500kb/hls/DmksUpK7.ts", 2000);
         BlobDown blobDown = new BlobDown(null);
 //        blobDown.beginParse();
 //        blobDown.downLoadItemTs("/Users/liyu/Downloads/",
 //                "https://cdn.iicgs.org/20200506/5c8624a0cd19f2f2c1234f2239631174.mp4/segment-8-v1-a1.ts", 1);
-        blobDown.mergeFile("[KBI-003]丈夫也没给过的激情中出幹砲 米仓穗香");
+        blobDown.mergeFile("111");
         System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
     }
 
@@ -145,7 +136,8 @@ public class BlobDown {
     public void mergeFile(String name) throws IOException {
         //删除日志
 //        String source = pageEntity.getPath().getText() + "/" + name;
-        String source = "G:\\Download\\" + name;
+        String path = "G:\\Download\\";
+        String source = path + name;
         File log = new File(source + "/finishedLog.log");
         if(log.exists())
             log.deleteOnExit();
@@ -153,7 +145,7 @@ public class BlobDown {
         if(file.exists()){
             File[] files = file.listFiles();
             FileSortUtils.sort(files);
-            File merge = new File(source + "\\" + name + ".mp4");
+            File merge = new File(path + name + ".mp4");
             if(!merge.exists())
                 merge.createNewFile();
             FileOutputStream fos = new FileOutputStream(merge, true);
@@ -177,6 +169,7 @@ public class BlobDown {
                     }
                 }
             }
+            file.delete();
             fos.close();
         }
     }
@@ -186,21 +179,13 @@ public class BlobDown {
         File dir = new File(source + "/" + name);
         if(!dir.exists())
             dir.mkdirs();
-//        executorService.execute(new RetryThread());
         for(int i=0;i<queues.size();i++){
             DownLoadTsThread downLoadTsThread =
                     new DownLoadTsThread(i, source + "/" +name, countDownLatch);
             executorService.execute(downLoadTsThread);
         }
-        executorService.shutdown();
+//        executorService.shutdown();
     }
-
-//    public void clear(){
-//        Iterator<Map<Integer, String>> iterator = queues.iterator();
-//        while (iterator.hasNext()){
-//            iterator.next().clear();
-//        }
-//    }
 
     private void downLoadItemTs(TsEntity entity) {
         if(lists.contains(entity.getTs())){
@@ -244,11 +229,13 @@ public class BlobDown {
             if (file.delete()) {
                 if (entity.getRetry()<=3) {
                     logger.error("error:" + e.getLocalizedMessage() + "--" + entity);
-                    blockingQueue.add(entity);
-                    logger.info(pageEntity.getPrefix() + entity.getTs() + "第" + (entity.getRetry()+1)
+                    queues.get(circleCount++).add(entity);
+                    if(circleCount >= (queues.size()-1))
+                        circleCount = 0;
+                    logger.info(pageEntity.getPrefix().getText() + entity.getTs() + "第" + (entity.getRetry()+1)
                             +"次下载失败，已加入重试队列");
                 }else {
-                    logger.info(pageEntity.getPrefix() + entity.getTs() + "已经多次下载失败，已丢弃");
+                    logger.info(pageEntity.getPrefix().getText() + entity.getTs() + "已多次下载失败，已丢弃");
                 }
             }
         }
@@ -344,10 +331,6 @@ class DownLoadTsThread implements Runnable{
 
     @Override
     public void run() {
-//        Map<Integer, String> stringMap = objects.get(index);
-//        stringMap.forEach((key, value) -> {
-//            downLoadItemTs(path, value, key);
-//        });
         ConcurrentLinkedQueue<TsEntity> tsEntities = queues.get(index);
         while (tsEntities.size() > 0) {
             TsEntity poll = tsEntities.poll();
@@ -359,28 +342,5 @@ class DownLoadTsThread implements Runnable{
         countDownLatch.countDown();
     }
 }
-
-class RetryThread extends Thread {
-
-    @Override
-    public void run() {
-        super.run();
-        while (true){
-            if(blockingQueue.isEmpty()){
-                try {
-                    Thread.sleep(5000);
-                    continue;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            TsEntity entity = blockingQueue.poll();
-            System.out.println("开始重试" + entity.getCount() + ".ts");
-            System.out.println("当前重试队列中剩余：" + blockingQueue.size());
-            downLoadItemTs(entity);
-        }
-    }
-}
-
 }
 

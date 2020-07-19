@@ -46,6 +46,7 @@ public class TsEntity implements Serializable {
                 "count=" + count +
                 ", ts='" + ts + '\'' +
                 ", path='" + path + '\'' +
+                ", retry=" + retry +
                 '}';
     }
 }
