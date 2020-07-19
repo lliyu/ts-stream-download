@@ -229,9 +229,9 @@ public class BlobDown {
             if (file.delete()) {
                 if (entity.getRetry()<=3) {
                     logger.error("error:" + e.getLocalizedMessage() + "--" + entity);
-                    queues.get(circleCount++).add(entity);
-                    if(circleCount >= (queues.size()-1))
-                        circleCount = 0;
+                    queues.get(circleCount).add(entity);
+//                    if(circleCount >= (queues.size()-1))
+//                        circleCount = 0;
                     logger.info(pageEntity.getPrefix().getText() + entity.getTs() + "第" + (entity.getRetry()+1)
                             +"次下载失败，已加入重试队列");
                 }else {
