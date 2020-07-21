@@ -31,6 +31,10 @@ public class Controller {
 
     private CountDownLatch countDownLatch = new CountDownLatch(1);
 
+    public void init(){
+        this.path.setText("G:\\Download");
+    }
+
     public void selectPath(){
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Choose the local dirctionary for FTP");

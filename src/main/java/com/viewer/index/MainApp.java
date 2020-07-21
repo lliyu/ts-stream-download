@@ -58,7 +58,8 @@ public class MainApp extends Application {
             File file = new File(System.getProperty("user.dir") + "/src/main/java/com/viewer/index/view/PersonOverview.fxml");
             loader.setLocation(file.toURL());
             AnchorPane personOverview = (AnchorPane) loader.load();
-
+            Controller controller = loader.getController();
+            controller.init();
             // Set person overview into the center of root layout.
             rootLayout.setCenter(personOverview);
         } catch (IOException e) {
