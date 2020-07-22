@@ -1,6 +1,7 @@
 package com.viewer.index.entity;
 
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
@@ -14,6 +15,7 @@ public class IndexPageEntity implements Serializable {
     private TextField name;
     private TextField prefix;
     private TextArea info;
+    private ProgressBar progressBar;
 
     public Label getPath() {
         return path;
@@ -61,5 +63,13 @@ public class IndexPageEntity implements Serializable {
 
     public void setPrefix(TextField prefix) {
         this.prefix = prefix;
+    }
+
+    public ProgressBar getProgressBar() {
+        return progressBar;
+    }
+
+    public void setProgressBar(ProgressBar progressBar) {
+        this.progressBar = progressBar;
     }
 }

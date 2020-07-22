@@ -30,6 +30,7 @@
                   <TextField fx:id="name" layoutX="104.0" layoutY="77.0" />
                   <Text layoutX="70.0" layoutY="131.0" strokeType="OUTSIDE" strokeWidth="0.0" text="prefix：" />
                   <TextField fx:id="prefix" layoutX="104.0" layoutY="115.0" />
+                  <ProgressBar fx:id="progressBar" layoutX="121.0" layoutY="334.0" prefWidth="200.0" progress="0.0" />
                </children>
             </AnchorPane>
         </items>

@@ -66,6 +66,7 @@ public class BlobDown {
     }
 
     public void beginParse() throws IOException, InterruptedException {
+        pageEntity.getProgressBar().setProgress(0);
         long l = System.currentTimeMillis();
         String name = pageEntity.getName().getText();
         String source = pageEntity.getPath().getText();
@@ -88,6 +89,7 @@ public class BlobDown {
         countDownLatch.await();
         logger.info("视频文件分段已经下载完成，现在开始合并");
         mergeFile(name);
+        pageEntity.getProgressBar().setProgress(1);
         logger.info("视频文件已下载完成，本次下载共耗时：" + (System.currentTimeMillis()-l)/1000 + "s");
     }
 
@@ -253,6 +255,7 @@ public class BlobDown {
             public void run() {
                 //更新JavaFX的主线程的代码放在此处
                 pageEntity.getLog().setText(currentIndex + "/" + total);
+                pageEntity.getProgressBar().setProgress((currentIndex*1.0)/total);
             }
         });
         fos.close();

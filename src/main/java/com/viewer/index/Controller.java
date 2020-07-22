@@ -6,6 +6,7 @@ import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.M3U8InfoDTO;
 import com.viewer.index.parse.TimesCalculate;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -28,6 +29,7 @@ public class Controller {
     public TextField name;
     public TextField prefix;
     public TextArea info;
+    public ProgressBar progressBar;
 
     private CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -53,6 +55,7 @@ public class Controller {
         pageEntity.setLog(log);
         pageEntity.setName(name);
         pageEntity.setPrefix(prefix);
+        pageEntity.setProgressBar(progressBar);
         Runnable runnable = () -> {
             try {
                 BlobDown down = new BlobDown(pageEntity);
