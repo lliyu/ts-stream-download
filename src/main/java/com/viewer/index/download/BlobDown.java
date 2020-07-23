@@ -61,7 +61,7 @@ public class BlobDown {
 //        blobDown.beginParse();
 //        blobDown.downLoadItemTs("/Users/liyu/Downloads/",
 //                "https://cdn.iicgs.org/20200506/5c8624a0cd19f2f2c1234f2239631174.mp4/segment-8-v1-a1.ts", 1);
-        blobDown.mergeFile("111");
+        blobDown.mergeFile("806");
         System.out.println("耗时:" + (System.currentTimeMillis()-l) + "ms");
     }
 

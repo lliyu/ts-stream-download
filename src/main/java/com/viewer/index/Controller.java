@@ -5,11 +5,13 @@ import com.viewer.index.download.BlobDown;
 import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.M3U8InfoDTO;
 import com.viewer.index.parse.TimesCalculate;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.util.StringUtils;
@@ -88,6 +90,42 @@ public class Controller {
             M3U8InfoDTO infoDTO = TimesCalculate.calAllTimes(nameText);
             info.setText(JSON.toJSONString(infoDTO));
         }
+    }
+    
+    public void openSettingPage(){
+        Stage window = new Stage();
+        window.setTitle("settings");
+        window.initModality(Modality.APPLICATION_MODAL);
+        window.setMinHeight(150);
+        window.setMinWidth(300);
+
+        Label lable = new Label("默认路径：");
+        VBox layout = new VBox(10);
+
+        FileChooser defaultPath = new FileChooser();
+        Button button = new Button("选择路径");
+        button.setOnAction(event -> {
+            Stage stage = new Stage();
+
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("选择默认保存路径");
+//            directoryChooser.setInitialDirectory("");
+
+            File dir = directoryChooser.showDialog(stage);
+            if (dir!=null) {
+                System.out.println(dir.getAbsolutePath());
+            }
+        });
+
+        Label pathValue = new Label();
+
+        layout.getChildren().addAll(lable,pathValue, button);
+        layout.setAlignment(Pos.CENTER);
+
+        Scene scene = new Scene(layout);
+
+        window.setScene(scene);
+        window.showAndWait();
     }
 
 

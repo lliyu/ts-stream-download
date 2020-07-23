@@ -4,6 +4,9 @@ package com.viewer.index;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -38,6 +41,16 @@ public class MainApp extends Application {
             File file = new File(System.getProperty("user.dir") + "/src/main/java/com/viewer/index/view/RootLayout.fxml");
             loader.setLocation(file.toURL());
             rootLayout = (BorderPane) loader.load();
+            Menu menu = new Menu("settings");
+            MenuItem setting = new MenuItem("set");
+
+            setting.setOnAction(e -> {
+                Controller controller = new Controller();
+                controller.openSettingPage();
+            });
+            menu.getItems().add(setting);
+
+            ((MenuBar)rootLayout.getChildren().get(0)).getMenus().add(menu);
 
             // Show the scene containing the root layout.
             Scene scene = new Scene(rootLayout);
