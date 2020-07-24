@@ -2,9 +2,11 @@ package com.viewer.index;
 
 import com.alibaba.fastjson.JSON;
 import com.viewer.index.download.BlobDown;
+import com.viewer.index.entity.ConfigEntity;
 import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.M3U8InfoDTO;
 import com.viewer.index.parse.TimesCalculate;
+import com.viewer.index.utils.FileUtils;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -93,6 +95,9 @@ public class Controller {
     }
     
     public void openSettingPage(){
+
+        ConfigEntity configEntity = FileUtils.settingRead();
+
         Stage window = new Stage();
         window.setTitle("settings");
         window.initModality(Modality.APPLICATION_MODAL);
@@ -102,24 +107,33 @@ public class Controller {
         Label lable = new Label("默认路径：");
         VBox layout = new VBox(10);
 
-        FileChooser defaultPath = new FileChooser();
+        Label pathValue = new Label();
+        pathValue.setText(configEntity.getDefaultPath());
         Button button = new Button("选择路径");
         button.setOnAction(event -> {
             Stage stage = new Stage();
 
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setTitle("选择默认保存路径");
-//            directoryChooser.setInitialDirectory("");
 
             File dir = directoryChooser.showDialog(stage);
             if (dir!=null) {
-                System.out.println(dir.getAbsolutePath());
+                pathValue.setText(dir.getAbsolutePath());
             }
         });
 
-        Label pathValue = new Label();
 
-        layout.getChildren().addAll(lable,pathValue, button);
+        Button save = new Button("保存");
+        save.setOnAction(event -> {
+            //将值保存到配置文件中
+            configEntity.setDefaultPath(pathValue.getText());
+            String target = System.getProperty("user.dir") + "/src/main/resources/settings.json";
+
+            File file = new File(target);
+            FileUtils.writeFile(file, JSON.toJSONString(configEntity));
+        });
+
+        layout.getChildren().addAll(lable,pathValue, button, save);
         layout.setAlignment(Pos.CENTER);
 
         Scene scene = new Scene(layout);

@@ -1,6 +1,8 @@
 package com.viewer.index;
 
 
+import com.viewer.index.entity.ConfigEntity;
+import com.viewer.index.utils.FileUtils;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -10,6 +12,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +44,7 @@ public class MainApp extends Application {
             File file = new File(System.getProperty("user.dir") + "/src/main/java/com/viewer/index/view/RootLayout.fxml");
             loader.setLocation(file.toURL());
             rootLayout = (BorderPane) loader.load();
-            Menu menu = new Menu("settings");
+            Menu menu = new Menu("设置");
             MenuItem setting = new MenuItem("set");
 
             setting.setOnAction(e -> {
@@ -68,11 +71,16 @@ public class MainApp extends Application {
         try {
             // Load person overview.
             FXMLLoader loader = new FXMLLoader();
-            File file = new File(System.getProperty("user.dir") + "/src/main/java/com/viewer/index/view/PersonOverview.fxml");
+            File file = new File(System.getProperty("user.dir") +
+                    "/src/main/java/com/viewer/index/view/PersonOverview.fxml");
             loader.setLocation(file.toURL());
             AnchorPane personOverview = (AnchorPane) loader.load();
             Controller controller = loader.getController();
             controller.init();
+            ConfigEntity configEntity = FileUtils.settingRead();
+            if (!StringUtils.isEmpty(configEntity.getDefaultPath())) {
+                controller.path.setText(configEntity.getDefaultPath());
+            }
             // Set person overview into the center of root layout.
             rootLayout.setCenter(personOverview);
         } catch (IOException e) {
