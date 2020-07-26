@@ -1,21 +1,22 @@
 package com.viewer.index;
 
 import com.alibaba.fastjson.JSON;
+import com.jfoenix.controls.JFXButton;
 import com.viewer.index.download.BlobDown;
 import com.viewer.index.entity.ConfigEntity;
 import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.M3U8InfoDTO;
 import com.viewer.index.parse.TimesCalculate;
 import com.viewer.index.utils.FileUtils;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -101,16 +102,22 @@ public class Controller {
         Stage window = new Stage();
         window.setTitle("settings");
         window.initModality(Modality.APPLICATION_MODAL);
-        window.setMinHeight(150);
-        window.setMinWidth(300);
+        window.setMinHeight(300);
+        window.setMinWidth(400);
+
+        VBox buttonBox = new VBox(10);
+        VBox layout = new VBox(15);
+        HBox pathBox = new HBox(10);
+
 
         Label lable = new Label("默认路径：");
-        VBox layout = new VBox(10);
 
         Label pathValue = new Label();
         pathValue.setText(configEntity.getDefaultPath());
-        Button button = new Button("选择路径");
-        button.setOnAction(event -> {
+
+        JFXButton choosePath = new JFXButton("选择路径");
+        choosePath.setStyle("fx-text-fill:WHITE;-fx-background-color:#E8E8E8;-fx-font-size:14px;");
+        choosePath.setOnAction(event -> {
             Stage stage = new Stage();
 
             DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -122,8 +129,8 @@ public class Controller {
             }
         });
 
-
-        Button save = new Button("保存");
+        JFXButton save = new JFXButton("保存");
+        save.setStyle("fx-text-fill:WHITE;-fx-background-color:#E8E8E8;-fx-font-size:14px;");
         save.setOnAction(event -> {
             //将值保存到配置文件中
             configEntity.setDefaultPath(pathValue.getText());
@@ -131,10 +138,26 @@ public class Controller {
 
             File file = new File(target);
             FileUtils.writeFile(file, JSON.toJSONString(configEntity));
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.titleProperty().set("信息");
+            alert.headerTextProperty().set("配置保存成功");
+            alert.showAndWait();
+
         });
 
-        layout.getChildren().addAll(lable,pathValue, button, save);
-        layout.setAlignment(Pos.CENTER);
+        save.setLayoutX(100);
+        save.setAlignment(Pos.BOTTOM_LEFT);
+
+        pathBox.setSpacing(15);
+        pathBox.setAlignment(Pos.CENTER);
+        pathBox.setLayoutY(10);
+        pathBox.getChildren().addAll(lable, pathValue, choosePath);
+        pathBox.setPadding(new Insets(20, 0, 0, 0));
+        buttonBox.getChildren().addAll(save);
+        buttonBox.setPadding(new Insets(20, 10, 10, 20));
+        layout.getChildren().addAll(pathBox, buttonBox);
+        layout.setAlignment(Pos.TOP_LEFT);
 
         Scene scene = new Scene(layout);
 

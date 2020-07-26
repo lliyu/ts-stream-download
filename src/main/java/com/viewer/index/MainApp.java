@@ -57,6 +57,7 @@ public class MainApp extends Application {
 
             // Show the scene containing the root layout.
             Scene scene = new Scene(rootLayout);
+            scene.getStylesheets().add(MainApp.class.getResource("/css/jfoenix-design.css").toExternalForm());
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (IOException e) {
@@ -74,7 +75,7 @@ public class MainApp extends Application {
             File file = new File(System.getProperty("user.dir") +
                     "/src/main/java/com/viewer/index/view/PersonOverview.fxml");
             loader.setLocation(file.toURL());
-            AnchorPane personOverview = (AnchorPane) loader.load();
+            AnchorPane personOverview = loader.load();
             Controller controller = loader.getController();
             controller.init();
             ConfigEntity configEntity = FileUtils.settingRead();
