@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -34,8 +35,9 @@ public class BlobDown {
     private ArrayList<ConcurrentLinkedQueue<TsEntity>> queues = Lists.newArrayList();
     private CountDownLatch countDownLatch = new CountDownLatch(4);
     private CopyOnWriteArrayList<String> lists = new CopyOnWriteArrayList<>();
+    private static DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
-    private volatile int circleCount;
+    private volatile int circleCount = 0;
 
     public int total = 0;
 
@@ -90,6 +92,7 @@ public class BlobDown {
         logger.info("视频文件分段已经下载完成，现在开始合并");
         mergeFile(name);
         pageEntity.getProgressBar().setProgress(1);
+        pageEntity.getLog().setText("100%");
         logger.info("视频文件已下载完成，本次下载共耗时：" + (System.currentTimeMillis()-l)/1000 + "s");
     }
 
@@ -231,9 +234,9 @@ public class BlobDown {
             if (file.delete()) {
                 if (entity.getRetry()<=3) {
                     logger.error("error:" + e.getLocalizedMessage() + "--" + entity);
-                    queues.get(circleCount).add(entity);
-//                    if(circleCount >= (queues.size()-1))
-//                        circleCount = 0;
+                    queues.get(circleCount++).add(entity);
+                    if(circleCount >= (queues.size()-1))
+                        circleCount = 0;
                     logger.info(pageEntity.getPrefix().getText() + entity.getTs() + "第" + (entity.getRetry()+1)
                             +"次下载失败，已加入重试队列");
                 }else {
@@ -254,7 +257,7 @@ public class BlobDown {
             @Override
             public void run() {
                 //更新JavaFX的主线程的代码放在此处
-                pageEntity.getLog().setText(currentIndex + "/" + total);
+                pageEntity.getLog().setText(decimalFormat.format((currentIndex*1.0/total)*100) + "%");
                 pageEntity.getProgressBar().setProgress((currentIndex*1.0)/total);
             }
         });

@@ -2,6 +2,7 @@ package com.viewer.index;
 
 import com.alibaba.fastjson.JSON;
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXTextField;
 import com.viewer.index.download.BlobDown;
 import com.viewer.index.entity.ConfigEntity;
 import com.viewer.index.entity.IndexPageEntity;
@@ -163,6 +164,53 @@ public class Controller {
 
         window.setScene(scene);
         window.showAndWait();
+    }
+
+    public void createNewDownTask(){
+        //新建一个面板用于创建下载任务
+
+        Stage downTask = new Stage();
+        downTask.setWidth(250);
+        downTask.setHeight(250);
+
+        VBox layout = new VBox(10);
+        HBox m3u8 = new HBox();
+        HBox taskName = new HBox();
+        HBox buttons = new HBox();
+
+        Label m3u8Key = new Label("m3u8");
+        JFXTextField m3u8Value = new JFXTextField();
+        m3u8.getChildren().addAll(m3u8Key, m3u8Value);
+        m3u8.setPadding(new Insets(20, 0, 0, 20));
+        m3u8.setSpacing(10);
+
+        Label taskKey = new Label("名称");
+        JFXTextField taskValue = new JFXTextField();
+        taskName.getChildren().addAll(taskKey, taskValue);
+        taskName.setPadding(new Insets(0, 0, 0, 20));
+        taskName.setSpacing(10);
+
+        JFXButton down = new JFXButton("下载");
+        JFXButton close = new JFXButton("退出");
+
+        down.setOnAction(event -> {
+
+        });
+
+        close.setOnAction(event -> downTask.close());
+        down.setStyle("fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;");
+        close.setStyle("fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;");
+        buttons.getChildren().addAll(down, close);
+        buttons.setPadding(new Insets(0, 0, 0, 20));
+        buttons.setSpacing(10);
+
+        layout.getChildren().addAll(m3u8, taskName, buttons);
+        Scene scene = new Scene(layout);
+
+        downTask.setScene(scene);
+
+        downTask.showAndWait();
+
     }
 
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import com.jfoenix.controls.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -9,21 +10,22 @@
    <children>
       <SplitPane layoutX="153.0" layoutY="70.0" prefHeight="300.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
-          <AnchorPane fx:id="result" minHeight="0.0" minWidth="0.0" prefHeight="265.0" prefWidth="629.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="265.0" prefWidth="629.0">
                <children>
-                  <JFXButton buttonType="RAISED" layoutX="76.0" layoutY="14.0" mnemonicParsing="false" onAction="#selectPath" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="选择目录：" />
-                  <Label fx:id="path" layoutX="179.0" layoutY="19.0" prefHeight="17.0" prefWidth="210.0" />
-                  <Label fx:id="log" layoutX="78.0" layoutY="388.0" text="log" />
-                  <JFXButton layoutX="67.0" layoutY="335.0" mnemonicParsing="false" onAction="#download" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="下载" />
-                  <Text layoutX="74.0" layoutY="99.0" strokeType="OUTSIDE" strokeWidth="0.0" text="url：" />
-                  <JFXTextField fx:id="m3u8" layoutX="117.0" layoutY="83.0" />
-                  <JFXButton fx:id="parse" layoutX="284.0" layoutY="143.0" mnemonicParsing="false" onAction="#parse" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="parse" />
-                  <JFXTextArea fx:id="info" layoutX="67.0" layoutY="196.0" prefHeight="116.0" prefWidth="307.0" />
-                  <Text layoutX="66.0" layoutY="127.0" strokeType="OUTSIDE" strokeWidth="0.0" text="name：" />
-                  <JFXTextField fx:id="name" layoutX="117.0" layoutY="111.0" />
-                  <Text layoutX="68.0" layoutY="161.0" strokeType="OUTSIDE" strokeWidth="0.0" text="prefix：" />
-                  <JFXTextField fx:id="prefix" layoutX="117.0" layoutY="145.0" />
-                  <ProgressBar fx:id="progressBar" layoutX="128.0" layoutY="386.0" prefWidth="200.0" progress="0.0" />
+                  <JFXButton buttonType="RAISED" layoutX="76.0" layoutY="130.0" mnemonicParsing="false" onAction="#selectPath" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="选择目录：" />
+                  <Label fx:id="path" layoutX="179.0" layoutY="135.0" prefHeight="17.0" prefWidth="210.0" />
+                  <Label fx:id="log" layoutX="78.0" layoutY="504.0" text="log" />
+                  <JFXButton layoutX="67.0" layoutY="451.0" mnemonicParsing="false" onAction="#download" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="下载" />
+                  <Text layoutX="74.0" layoutY="215.0" strokeType="OUTSIDE" strokeWidth="0.0" text="url：" />
+                  <JFXTextField fx:id="m3u8" layoutX="117.0" layoutY="199.0" />
+                  <JFXButton fx:id="parse" layoutX="284.0" layoutY="259.0" mnemonicParsing="false" onAction="#parse" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="parse" />
+                  <JFXTextArea fx:id="info" layoutX="67.0" layoutY="312.0" prefHeight="116.0" prefWidth="307.0" />
+                  <Text layoutX="66.0" layoutY="243.0" strokeType="OUTSIDE" strokeWidth="0.0" text="name：" />
+                  <JFXTextField fx:id="name" layoutX="117.0" layoutY="227.0" />
+                  <Text layoutX="68.0" layoutY="277.0" strokeType="OUTSIDE" strokeWidth="0.0" text="prefix：" />
+                  <JFXTextField fx:id="prefix" layoutX="117.0" layoutY="261.0" />
+                  <ProgressBar fx:id="progressBar" layoutX="157.0" layoutY="503.0" prefWidth="200.0" progress="0.0" />
+                  <JFXButton buttonType="RAISED" layoutX="77.0" layoutY="57.0" mnemonicParsing="false" onAction="#createNewDownTask" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="新建任务" />
                </children>
             </AnchorPane>
         </items>
