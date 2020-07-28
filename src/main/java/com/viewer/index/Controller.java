@@ -5,6 +5,7 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import com.viewer.index.download.BlobDown;
 import com.viewer.index.entity.ConfigEntity;
+import com.viewer.index.entity.DownTask;
 import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.M3U8InfoDTO;
 import com.viewer.index.parse.TimesCalculate;
@@ -194,6 +195,16 @@ public class Controller {
         JFXButton close = new JFXButton("退出");
 
         down.setOnAction(event -> {
+            DownTask task = new DownTask();
+            task.setM3u8(m3u8Value.getText());
+            task.setName(taskValue.getText());
+            if(!StringUtils.isEmpty(m3u8Value.getText())){
+                int index = m3u8Value.getText().lastIndexOf('/');
+                String prefix = m3u8Value.getText().substring(0, index);
+                task.setPrefix(prefix);
+            }
+            //开启下载任务
+            //todo
 
         });
 
