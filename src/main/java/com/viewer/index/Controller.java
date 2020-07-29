@@ -2,6 +2,7 @@ package com.viewer.index;
 
 import com.alibaba.fastjson.JSON;
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXProgressBar;
 import com.jfoenix.controls.JFXTextField;
 import com.viewer.index.download.BlobDown;
 import com.viewer.index.entity.ConfigEntity;
@@ -10,6 +11,7 @@ import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.M3U8InfoDTO;
 import com.viewer.index.parse.TimesCalculate;
 import com.viewer.index.utils.FileUtils;
+import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -38,10 +40,13 @@ public class Controller {
     public TextArea info;
     public ProgressBar progressBar;
 
+    @FXML
+    public VBox taskPane;
+
     private CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public void init(){
-        this.path.setText("G:\\Download");
+//        this.path.setText("G:\\Download");
     }
 
     public void selectPath(){
@@ -204,8 +209,15 @@ public class Controller {
                 task.setPrefix(prefix);
             }
             //开启下载任务
-            //todo
-
+            HBox taskItem = new HBox();
+            Label tile = new Label(taskValue.getText());//任务的名称
+            JFXProgressBar progressBar = new JFXProgressBar(0.5);//进度条
+            Label percentage = new Label("0.00%");//百分比进度
+            taskItem.getChildren().addAll(tile, progressBar, percentage);
+            taskItem.setSpacing(20);
+            taskPane.getChildren().addAll(taskItem);
+            //关闭当前新建页面 在主页面显示一个下载任务
+            downTask.close();
         });
 
         close.setOnAction(event -> downTask.close());

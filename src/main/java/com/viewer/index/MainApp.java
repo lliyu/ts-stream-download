@@ -4,7 +4,9 @@ package com.viewer.index;
 import com.viewer.index.entity.ConfigEntity;
 import com.viewer.index.utils.FileUtils;
 import javafx.application.Application;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -77,11 +79,13 @@ public class MainApp extends Application {
             loader.setLocation(file.toURL());
             AnchorPane personOverview = loader.load();
             Controller controller = loader.getController();
+            ObservableList<Node> children = personOverview.getChildren();
+            System.out.println(children);
             controller.init();
-            ConfigEntity configEntity = FileUtils.settingRead();
-            if (!StringUtils.isEmpty(configEntity.getDefaultPath())) {
-                controller.path.setText(configEntity.getDefaultPath());
-            }
+//            ConfigEntity configEntity = FileUtils.settingRead();
+//            if (!StringUtils.isEmpty(configEntity.getDefaultPath())) {
+//                controller.path.setText(configEntity.getDefaultPath());
+//            }
             // Set person overview into the center of root layout.
             rootLayout.setCenter(personOverview);
         } catch (IOException e) {

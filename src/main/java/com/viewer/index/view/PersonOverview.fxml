@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import com.jfoenix.controls.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.viewer.index.Controller">
    <children>
@@ -12,20 +10,8 @@
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="265.0" prefWidth="629.0">
                <children>
-                  <JFXButton buttonType="RAISED" layoutX="76.0" layoutY="130.0" mnemonicParsing="false" onAction="#selectPath" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="选择目录：" />
-                  <Label fx:id="path" layoutX="179.0" layoutY="135.0" prefHeight="17.0" prefWidth="210.0" />
-                  <Label fx:id="log" layoutX="78.0" layoutY="504.0" text="log" />
-                  <JFXButton layoutX="67.0" layoutY="451.0" mnemonicParsing="false" onAction="#download" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="下载" />
-                  <Text layoutX="74.0" layoutY="215.0" strokeType="OUTSIDE" strokeWidth="0.0" text="url：" />
-                  <JFXTextField fx:id="m3u8" layoutX="117.0" layoutY="199.0" />
-                  <JFXButton fx:id="parse" layoutX="284.0" layoutY="259.0" mnemonicParsing="false" onAction="#parse" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="parse" />
-                  <JFXTextArea fx:id="info" layoutX="67.0" layoutY="312.0" prefHeight="116.0" prefWidth="307.0" />
-                  <Text layoutX="66.0" layoutY="243.0" strokeType="OUTSIDE" strokeWidth="0.0" text="name：" />
-                  <JFXTextField fx:id="name" layoutX="117.0" layoutY="227.0" />
-                  <Text layoutX="68.0" layoutY="277.0" strokeType="OUTSIDE" strokeWidth="0.0" text="prefix：" />
-                  <JFXTextField fx:id="prefix" layoutX="117.0" layoutY="261.0" />
-                  <ProgressBar fx:id="progressBar" layoutX="157.0" layoutY="503.0" prefWidth="200.0" progress="0.0" />
-                  <JFXButton buttonType="RAISED" layoutX="77.0" layoutY="57.0" mnemonicParsing="false" onAction="#createNewDownTask" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="新建任务" />
+                  <JFXButton buttonType="RAISED" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#createNewDownTask" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="新建任务" />
+                  <VBox fx:id="taskPane" layoutX="41.0" layoutY="93.0" spacing="20" prefHeight="413.0" prefWidth="517.0" />
                </children>
             </AnchorPane>
         </items>
