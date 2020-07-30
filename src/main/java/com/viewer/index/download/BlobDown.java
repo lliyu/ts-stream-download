@@ -2,9 +2,12 @@ package com.viewer.index.download;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
+import com.viewer.index.entity.DownItemControl;
+import com.viewer.index.entity.DownTask;
 import com.viewer.index.entity.IndexPageEntity;
 import com.viewer.index.entity.TsEntity;
 import com.viewer.index.utils.FileSortUtils;
+import com.viewer.index.utils.FileUtils;
 import javafx.application.Platform;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -79,7 +82,7 @@ public class BlobDown {
         Object content = urlConnection.getContent();
         downM3U8File((InputStream) content, name + ".m3u8");
         logger.info("开始从文件中读取:" + name + ".m3u8");
-        readM3U8ToList(name + ".m3u8", 0);
+        readM3U8ToList(name + ".m3u8", 0, null);
 
         totalFinishedCount();
         //读取下载记录
@@ -87,12 +90,39 @@ public class BlobDown {
 
         System.out.println("开始下载....");
         logger.info("开始下载ts文件：" + name);
-        downloadTsFile(source, name);
+        downloadTsFile(source, name, null);
         countDownLatch.await();
         logger.info("视频文件分段已经下载完成，现在开始合并");
         mergeFile(name);
         pageEntity.getProgressBar().setProgress(1);
         pageEntity.getLog().setText("100%");
+        logger.info("视频文件已下载完成，本次下载共耗时：" + (System.currentTimeMillis()-l)/1000 + "s");
+    }
+
+    public void mutilBeginParse(DownTask task, DownItemControl control) throws IOException, InterruptedException {
+        control.getProgressBar().setProgress(0);
+        long l = System.currentTimeMillis();
+        String source = FileUtils.settingRead().getDefaultPath();
+        logger.info("===============开始执行‘" + task.getName() + "'的下载流程=======================");
+        URL url = new URL(task.getM3u8());
+        URLConnection urlConnection = url.openConnection();
+        Object content = urlConnection.getContent();
+        downM3U8File((InputStream) content, task.getName() + ".m3u8");
+        logger.info("开始从文件中读取:" + task.getName() + ".m3u8");
+        readM3U8ToList(task.getName() + ".m3u8", 0, task);
+
+        totalFinishedCount();
+        //读取下载记录
+        readDownloadLog(source, task.getName());
+
+        System.out.println("开始下载....");
+        logger.info("开始下载ts文件：" + task.getName());
+        downloadTsFile(source, task.getName(), control);
+        countDownLatch.await();
+        logger.info("视频文件分段已经下载完成，现在开始合并");
+        mergeFile(task.getName());
+        control.getProgressBar().setProgress(1);
+        control.getPercentage().setText("100%");
         logger.info("视频文件已下载完成，本次下载共耗时：" + (System.currentTimeMillis()-l)/1000 + "s");
     }
 
@@ -180,19 +210,19 @@ public class BlobDown {
     }
 
 
-    private void downloadTsFile(String source, String name) {
+    private void downloadTsFile(String source, String name, DownItemControl control) {
         File dir = new File(source + "/" + name);
         if(!dir.exists())
             dir.mkdirs();
         for(int i=0;i<queues.size();i++){
             DownLoadTsThread downLoadTsThread =
-                    new DownLoadTsThread(i, source + "/" +name, countDownLatch);
+                    new DownLoadTsThread(i, source + "/" +name, countDownLatch, control);
             executorService.execute(downLoadTsThread);
         }
 //        executorService.shutdown();
     }
 
-    private void downLoadItemTs(TsEntity entity) {
+    private void downLoadItemTs(TsEntity entity, DownItemControl control) {
         if(lists.contains(entity.getTs())){
             return;
         }
@@ -208,7 +238,7 @@ public class BlobDown {
         try(FileOutputStream fos = new FileOutputStream(file)) {
             Thread.sleep(100);
             CloseableHttpClient conn = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet(pageEntity.getPrefix().getText() + entity.getTs());
+            HttpGet httpGet = new HttpGet(entity.getM3u8Prefix() + entity.getTs());
             RequestConfig requestConfig = RequestConfig.custom()
                     .setSocketTimeout(2000).setConnectTimeout(2000).build();//设置请求和传输超时时间
             httpGet.setConfig(requestConfig);
@@ -225,7 +255,7 @@ public class BlobDown {
                 fos.write(bytes, 0, index);
             }
 //            下载完成写入文件中
-            wirteDownloadLogToFile(entity);
+            wirteDownloadLogToFile(entity, control);
 
         }catch (IllegalStateException e){
             logger.error("url不合法：" + e.getLocalizedMessage() + "---" + entity.getTs());
@@ -237,16 +267,16 @@ public class BlobDown {
                     queues.get(circleCount++).add(entity);
                     if(circleCount >= (queues.size()-1))
                         circleCount = 0;
-                    logger.info(pageEntity.getPrefix().getText() + entity.getTs() + "第" + (entity.getRetry()+1)
+                    logger.info(entity.getM3u8Prefix() + entity.getTs() + "第" + (entity.getRetry()+1)
                             +"次下载失败，已加入重试队列");
                 }else {
-                    logger.info(pageEntity.getPrefix().getText() + entity.getTs() + "已多次下载失败，已丢弃");
+                    logger.info(entity.getM3u8Prefix() + entity.getTs() + "已多次下载失败，已丢弃");
                 }
             }
         }
     }
 
-    private void wirteDownloadLogToFile(TsEntity entity) throws IOException {
+    private void wirteDownloadLogToFile(TsEntity entity, DownItemControl control) throws IOException {
         File file = new File(entity.getPath() + "//finishedLog.log");
         if(!file.exists())
             file.createNewFile();
@@ -257,14 +287,20 @@ public class BlobDown {
             @Override
             public void run() {
                 //更新JavaFX的主线程的代码放在此处
-                pageEntity.getLog().setText(decimalFormat.format((currentIndex*1.0/total)*100) + "%");
-                pageEntity.getProgressBar().setProgress((currentIndex*1.0)/total);
+                control.getPercentage().setText(decimalFormat.format((currentIndex*1.0/total)*100) + "%");
+                control.getProgressBar().setProgress((currentIndex*1.0)/total);
             }
         });
         fos.close();
     }
 
-    public void readM3U8ToList(String fileName, double sec) throws IOException {
+    /**
+     *
+     * @param fileName
+     * @param sec 读取指定时长的视频
+     * @throws IOException
+     */
+    public void readM3U8ToList(String fileName, double sec, DownTask task) throws IOException {
         String source = System.getProperty("user.dir") + "/src/test/java/resource/";
         fileName = source + fileName;
         File file = new File(fileName);
@@ -290,6 +326,7 @@ public class BlobDown {
             TsEntity tsEntity = new TsEntity();
             tsEntity.setCount(i);
             tsEntity.setTs(lists.get(i));
+            tsEntity.setM3u8Prefix(task.getPrefix());
             tsEntities.add(tsEntity);
         }
     }
@@ -328,11 +365,13 @@ class DownLoadTsThread implements Runnable{
     private int index;
     private String path;
     private CountDownLatch countDownLatch;
+    private DownItemControl control;
 
-    public DownLoadTsThread(int index, String path, CountDownLatch countDownLatch) {
+    public DownLoadTsThread(int index, String path, CountDownLatch countDownLatch, DownItemControl control) {
         this.index = index;
         this.path = path;
         this.countDownLatch = countDownLatch;
+        this.control = control;
     }
 
     @Override
@@ -341,7 +380,7 @@ class DownLoadTsThread implements Runnable{
         while (tsEntities.size() > 0) {
             TsEntity poll = tsEntities.poll();
             poll.setPath(path);
-            downLoadItemTs(poll);
+            downLoadItemTs(poll, control);
             System.out.println("queue:" + index + "剩余数量：" + tsEntities.size());
         }
         logger.info("queue:" + index + "-已经全部下载完毕");

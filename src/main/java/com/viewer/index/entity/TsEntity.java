@@ -7,6 +7,7 @@ public class TsEntity implements Serializable {
     private String ts;
     private String path;
     private int retry;//当前重试次数
+    private String m3u8Prefix;
 
     public int getCount() {
         return count;
@@ -38,6 +39,14 @@ public class TsEntity implements Serializable {
 
     public void setRetry(int retry) {
         this.retry = retry;
+    }
+
+    public String getM3u8Prefix() {
+        return m3u8Prefix;
+    }
+
+    public void setM3u8Prefix(String m3u8Prefix) {
+        this.m3u8Prefix = m3u8Prefix;
     }
 
     @Override

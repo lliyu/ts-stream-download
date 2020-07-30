@@ -5,10 +5,7 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXProgressBar;
 import com.jfoenix.controls.JFXTextField;
 import com.viewer.index.download.BlobDown;
-import com.viewer.index.entity.ConfigEntity;
-import com.viewer.index.entity.DownTask;
-import com.viewer.index.entity.IndexPageEntity;
-import com.viewer.index.entity.M3U8InfoDTO;
+import com.viewer.index.entity.*;
 import com.viewer.index.parse.TimesCalculate;
 import com.viewer.index.utils.FileUtils;
 import javafx.fxml.FXML;
@@ -205,8 +202,8 @@ public class Controller {
             task.setName(taskValue.getText());
             if(!StringUtils.isEmpty(m3u8Value.getText())){
                 int index = m3u8Value.getText().lastIndexOf('/');
-                String prefix = m3u8Value.getText().substring(0, index);
-                task.setPrefix(prefix);
+                String prefix = m3u8Value.getText().substring(0, index+1);
+                task.setPrefix("");
             }
             //开启下载任务
             HBox taskItem = new HBox();
@@ -216,6 +213,18 @@ public class Controller {
             taskItem.getChildren().addAll(tile, progressBar, percentage);
             taskItem.setSpacing(20);
             taskPane.getChildren().addAll(taskItem);
+            //下载任务 todo
+            DownItemControl control = new DownItemControl(tile, progressBar, percentage);
+            new Thread(() -> {
+                BlobDown blobDown = new BlobDown(null);
+                try {
+                    blobDown.mutilBeginParse(task, control);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
             //关闭当前新建页面 在主页面显示一个下载任务
             downTask.close();
         });

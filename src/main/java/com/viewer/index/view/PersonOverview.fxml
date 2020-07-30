@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import com.jfoenix.controls.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.viewer.index.Controller">
    <children>
@@ -11,7 +13,7 @@
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="265.0" prefWidth="629.0">
                <children>
                   <JFXButton buttonType="RAISED" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#createNewDownTask" style="-fx-text-fill:WHITE;-fx-background-color:#5264AE;-fx-font-size:14px;" text="新建任务" />
-                  <VBox fx:id="taskPane" layoutX="41.0" layoutY="93.0" spacing="20" prefHeight="413.0" prefWidth="517.0" />
+                  <VBox fx:id="taskPane" layoutX="41.0" layoutY="93.0" prefHeight="413.0" prefWidth="517.0" spacing="20" />
                </children>
             </AnchorPane>
         </items>
